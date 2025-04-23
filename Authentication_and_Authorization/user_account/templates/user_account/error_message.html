@@ -1,0 +1,19 @@
+{% extends "user_account/base.html" %}
+{% load static %}
+
+{% block title %}Error{% endblock %}
+
+{% block main %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-sm border-0 p-4 rounded-4 text-center" style="max-width: 600px; width: 100%;">
+        <img src="{% static 'user_account/images/error_image.png' %}" alt="Error Icon" class="img-fluid mb-3" style="width: 100%; height: 200px;">
+        <h3 class="text-danger fw-bold">Something went wrong</h3>
+        <p class="text-muted mb-4">
+            {{ error_message }}
+        </p>
+        <h5>Or</h5>
+        <br>
+        <a href="{% url 'user_account:register' %}" class="btn btn-primary">Sign up to get a new token</a>
+    </div>
+</div>
+{% endblock %}

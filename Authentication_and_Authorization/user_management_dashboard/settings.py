@@ -12,7 +12,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["c834-102-89-22-82.ngrok-free.app"]
 
 # Application definition
 
@@ -55,7 +55,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'user_management_dashboard.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -65,7 +64,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -84,7 +82,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -116,6 +113,10 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-LOGIN_REDIRECT_URL = "/user_account/home/"
+# LOGIN_REDIRECT_URL = "/user_account/home/"
 LOGIN_URL = "/user_account/login/"
 LOGOUT_REDIRECT_URL = "user_account:login"
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://c834-102-89-22-82.ngrok-free.app',
+]

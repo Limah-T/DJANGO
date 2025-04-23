@@ -34,6 +34,21 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
     objects = CustomUserManager()
 
+    def __str__(self):
+        return self.username
+    
+    def save(self, *args, **kwargs):
+        # Capitalizing the first and last name
+        self.first_name = self.first_name.capitalize()
+        self.last_name = self.last_name.capitalize()
+        
+        # Converting username and email to lowercase
+        self.username = self.username.lower()
+        self.email = self.email.lower()
+
+        # Saving the instance with any extra arguments passed
+        super().save(*args, **kwargs)
+
 # Temporary User Model
 class TempUser(models.Model):
     first_name = models.CharField(max_length=30, null=False, blank=False)

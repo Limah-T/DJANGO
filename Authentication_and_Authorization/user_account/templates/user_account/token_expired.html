@@ -1,0 +1,21 @@
+{% extends "user_account/base.html" %}
+{% load static %}
+
+{% block title %}Token Expired{% endblock %}
+
+{% block main %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="card shadow-lg p-4 border-0 rounded-4" style="max-width: 500px; width: 100%;">
+        <div class="text-center">
+            <img src="{% static 'user_account/images/token_expired.png' %}" alt="Expired Token" class="img-fluid mb-3" style="max-height: 150px;">
+            <h2 class="text-danger fw-bold">Token Expired</h2>
+            <p class="text-muted mb-4">
+                Oops! The verification link you used has expired. For your security, token links are time-limited.
+            </p>
+            <a href="{% url 'user_account:register' %}" class="btn btn-primary w-100">
+                Signup to Request New Verification Link
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

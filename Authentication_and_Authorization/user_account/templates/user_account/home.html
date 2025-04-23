@@ -1,1 +1,87 @@
 {% extends "user_account/base.html" %}
+{% block main %}
+<section class="bg-light py-5">
+    <div class="container text-center">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% else %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        <h1 class="display-5 fw-bold">User Management Dashboard</h1>
+        <p class="lead text-muted mt-3">
+            Manage users, roles, and permissions efficiently in one place. This dashboard gives you full control over user access, account activity, and more.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+            {% if user.is_superuser %}
+                <a href="{% url 'user_account:register' %}" class="btn btn-primary btn-lg px-4 gap-3">Add User
+                </a>
+            {% endif %}
+            {% if not user.is_authenticated %}
+                <a href="{% url 'user_account:login' %}" class="btn btn-outline-secondary btn-lg px-4">Login                   
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="container py-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people display-4 text-primary"></i>
+                    <h5 class="card-title mt-3">User Management</h5>
+                    <p class="card-text">Add, edit, deactivate, and delete user accounts with ease. Organize users by roles and monitor activity.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-lock display-4 text-success"></i>
+                    <h5 class="card-title mt-3">Secure Access</h5>
+                    <p class="card-text">Built-in authentication system with secure password reset, email verification, and session management.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-speedometer2 display-4 text-warning"></i>
+                    <h5 class="card-title mt-3">Admin Dashboard</h5>
+                    <p class="card-text">Track system stats, manage staff privileges, and maintain control over your app’s operations from one panel.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-dark text-light py-5">
+    <div class="container text-center">
+        <h2 class="mb-3">Why Choose This Dashboard?</h2>
+        <p class="lead mb-4">Designed for simplicity and power, this dashboard makes it easy to scale, manage, and secure your users effortlessly.</p>
+        <div class="row g-3 justify-content-center">
+            <div class="col-6 col-md-3">
+                <h5>✓ Responsive</h5>
+                <p class="small">Optimized for all devices.</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h5>✓ Fast Setup</h5>
+                <p class="small">Deploy and use in minutes.</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h5>✓ Scalable</h5>
+                <p class="small">Supports thousands of users.</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h5>✓ Secure</h5>
+                <p class="small">Built on Django best practices.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

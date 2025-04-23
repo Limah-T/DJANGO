@@ -14,45 +14,52 @@
     {% block header %}
     <section class="header-section">
         <nav class="navbar navbar-expand-lg bg-secondary">
-            <div class="container-fluid">
-            <a class="navbar-brand text-light" href="#">Navbar</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link active text-light" aria-current="page" href="{% url 'user_account:home' %}">Home</a>
-                </li>
-                {% if not user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="{% url 'user_account:login' %}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="{% url 'user_account:register' %}">Register</a>
-                    </li>
-                {% elif user.is_authenticated %}
-                <form method="POST" action="{% url 'user_account:logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary
-                    ">Logout</button>
-                </form>
-                {% endif%}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Dropdown link
-                    </a>
-                    <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+            <div class="container">
+                <!-- Brand: only visible on small screens -->
+                <a class="navbar-brand text-light d-lg-none" href="#">UMD</a>
+        
+                <!-- Hamburger button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation" style="color: transparent;">
+                    <span class="navbar-toggler-icon" style="background-color: whitesmoke;"></span>
+                </button>
+        
+                <!-- Collapsible nav -->
+                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                    <!-- Center on large screens, left-align on small -->
+                    <ul class="navbar-nav ms-lg-auto me-lg-auto text-lg-center text-start gap-3">
+                        <li class="nav-item">
+                            <a class="nav-link active text-light" href="{% url 'user_account:home' %}" style="font-size: 1.5rem;">Home</a>
+                        </li>
+                        {% if user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="{% url 'user_account:all_users' %}" style="font-size: 1.5rem;">Users</a>
+                            </li>
+                        {% endif %}
+        
+                        {% if not user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="{% url 'user_account:login' %}" style="font-size: 1.5rem;">Login</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="#" style="font-size: 1.5rem;">Clients</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="{% url 'user_account:password_change'%}" style="font-size: 1.5rem;">Change Password</a>
+                            </li>
+                            <li class="nav-item">
+                                <form method="POST" action="{% url 'user_account:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-light" style="font-size: 1.5rem;">Logout</button>
+                                </form>
+                            </li>
+                        {% endif %}
                     </ul>
-                </li>
-                </ul>
-            </div>
+                </div>
             </div>
         </nav>
-    </section>
+    </section>    
     {% endblock %}
     {% block main %}
     {% endblock %}
