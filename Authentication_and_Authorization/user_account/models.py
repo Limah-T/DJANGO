@@ -33,3 +33,11 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
     objects = CustomUserManager()
+
+# Temporary User Model
+class TempUser(models.Model):
+    first_name = models.CharField(max_length=30, null=False, blank=False)
+    last_name = models.CharField(max_length=30, null=False, blank=False)
+    username = models.CharField(max_length=15, null=False, blank=False, unique=True)
+    email = models.EmailField(null=False, blank=False, unique=True)
+    password = models.CharField(max_length=200, null=False, blank=False)

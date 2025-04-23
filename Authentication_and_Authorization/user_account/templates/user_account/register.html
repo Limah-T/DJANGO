@@ -1,0 +1,27 @@
+{% extends "user_account/base.html" %}
+{% block title %}Register{% endblock %}
+{% load static %}
+{% block main %}
+<div class="container-fluid d-flex align-items-center justify-content-center" style="min-height: 100vh; background-color: #f8f9fa;">
+    <div class="w-100" style="max-width: 500px;">
+        <div class="shadow p-4 rounded bg-white mx-3">   
+                <form method="POST" action="{% url 'user_account:register' %}">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <label for="{{ field.id_for_label }}" class="my-2" style="font-size: 1rem; font-weight: bold; color: #333;">
+                            {{field.label}}
+                        </label>
+                        {{field}}
+                        {% if field.errors %}
+                            <div class="text-danger small">
+                                {{ field.errors.0 }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <br>
+                    <button type="submit" class="btn btn-dark w-100">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
