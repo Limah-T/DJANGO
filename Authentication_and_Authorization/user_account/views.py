@@ -7,15 +7,19 @@ from django.template.loader import render_to_string
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView, PasswordResetView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import generic
+from django.conf import settings
 from datetime import datetime as dt, timezone, timedelta
 from dotenv import load_dotenv
 from .models import CustomUser, TempUser
 from . import forms
-import jwt, os, socket, smtplib
+import jwt, os, socket, smtplib, base64
 
 load_dotenv()
 
@@ -37,7 +41,7 @@ def token_expiration_time(request, username):
 
 def send_email(request, username, email):
     token = token_expiration_time(request, username=username)
-    verify = f"https://c834-102-89-22-82.ngrok-free.app/user_account/verify_token/{token}/"
+    verify = f"http://127.0.0.1:8000/user_account/verify_token/{token}/"
 
     html_content = render_to_string(
         "user_account/email.html",
@@ -48,11 +52,12 @@ def send_email(request, username, email):
         subject="Welcome to UMD!",
         from_email=os.getenv("EMAIL_HOST_USER"),
         to=[email],
+        headers={"X-Mail-Queue-Priority": "now"}  # highest Priority set here, do not queue
     )
     msg.attach_alternative(html_content, "text/html")
-
+    
     try:
-        msg.send(fail_silently=False)
+        msg.send()
         messages.success(request, f"Verification email sent to {email} successfully, please inform the user to check their email!")
         return render(request, "user_account/verify_email.html", {"username": username, "email": email})
     except (smtplib.SMTPException, socket.gaierror, socket.timeout) as e:
@@ -60,6 +65,7 @@ def send_email(request, username, email):
         return redirect(reverse_lazy("user_account:register"))
     except Exception as e:
         messages.error(request, "An unexpected error occurred while sending the email.")
+        print(e)
         return redirect(reverse_lazy("user_account:register"))
     
 def verification(request, token):
@@ -119,6 +125,7 @@ class RegisterView(FormView):
         return super().post(request, *args, **kwargs)
 
 def add_user_to_database(request, username):
+    print("Testing")
     # Checks if user already exist
     user_exist = TempUser.objects.filter(username=username).exists()
     if user_exist:
@@ -160,8 +167,10 @@ class LoginView(FormView):
             messages.error(request, message="Email or Password is incorrect!")
             return redirect(reverse_lazy("user_account:login"))
         
-class PasswordChngView(PasswordChangeView):
+class PasswordChngView(PasswordChangeView, LoginRequiredMixin):
     template_name = "user_account/password_change.html"
+    login_url = settings.LOGIN_URL
+    redirect_field_name = "next"
     form_class = PasswordChangeForm
     success_url = reverse_lazy("user_account:password_change_done")
 
@@ -173,9 +182,107 @@ class PasswordChngView(PasswordChangeView):
 
 class PasswordChngDoneView(PasswordChangeDoneView):
     template_name = "user_account/password_change_done.html"
+
+def send_reset_link(user, uid, token):
+    EMAIL_CONTEXT ={ 
+            "user": user,
+            "domain": os.getenv("DOMAIN"),
+            "protocol": os.getenv("PASSWORD_RESET_PROTOCOL"),
+            "uid": uid,
+            "token": token,
+    }
+    html_content = render_to_string(
+        template_name="user_account/reset_password_link.html",
+        context = {"reset_link": f"{EMAIL_CONTEXT['protocol']}://{EMAIL_CONTEXT['domain']}/user_account/password_reset_confirm/{uid}/{token}/"}
+    )
+    msg = EmailMultiAlternatives(
+        subject ="Reset Password on UMD",
+        from_email= settings.EMAIL_HOST_USER,
+        to = [user.email]
+    )
+
+    try:
+        msg.attach_alternative(content=html_content, mimetype="text/html")
+        msg.send()
+        print("Email sent successfully to reset password")
+        print(token, uid)
+    except (smtplib.SMTPException, socket.gaierror, socket.timeout) as e:
+        return HttpResponse("Your network is bad at the moment!")
+    except Exception as e:
+        print("Error :", e)
+        return HttpResponse("An error occured while sending the message to email!")
+    
+def encode_primary_key_to_base64(pk):
+    pk_bytes = str(pk).encode("utf-8") # convert the string to bytes
+    print(pk_bytes)
+    encoded_pk = urlsafe_base64_encode(s=pk_bytes) # convert bytes to base64 url
+    print(encoded_pk)
+    return encoded_pk
+
+def email_message_view(request, user):
+    return render(request, "user_account/check_email_message.html", {"email": user})
+
+class PasswordresetView(PasswordResetView):
+    template_name = "user_account/forget_password.html"
+    form_class = PasswordResetForm
+    success_url = "user_account:password_reset_done"
+    html_email_template_name = "user_account/reset_password_link.html"
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form(form_class=self.form_class)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            email_exist = CustomUser.objects.filter(email=email).first()
+            if email_exist:
+                if CustomUser.objects.get(email=email).is_active:
+                    user = CustomUser.objects.get(email=email)
+                    base64_url = encode_primary_key_to_base64(pk=user.id)
+                    token=default_token_generator.make_token(user)
+                    send_reset_link(user=user, uid=base64_url, token=token) 
+                    return redirect(reverse_lazy("user_account:check_email_message", kwargs={'user': user.email}))
+            messages.error(request, message="Email does not exist!")
+            return redirect(reverse_lazy("user_account:password_reset"))
+        return super().post(request, *args, **kwargs)
+
+class PasswordresetConfirm(PasswordResetConfirmView):
+    template_name = "user_account/set_new_password.html"
+    form_class = SetPasswordForm
+    success_url = "user_account:password_reset_complete"
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form(form_class=self.form_class)
+        print(self.kwargs.get("token"), self.kwargs.get("uidb64"))
+        if form.is_valid():
+            password1 = form.cleaned_data.get("new_password1")
+            password2 = form.cleaned_data.get("new_password2")
+            print(password1, password2)
+            valid_link = self.validlink
+            if password1 == password2 and valid_link:
+                form.save()
+                return redirect(reverse_lazy(self.success_url))
+            return HttpResponse("Form submitted")       
+        return super().post(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        uidb64 = self.kwargs.get("uidb64")
+        token = self.kwargs.get("token")
+        context = super().get_context_data(**kwargs)
+        context['uid'] = uidb64
+        context['token'] = token
+        return context
+
+class PasswordresetComplete(PasswordResetCompleteView):
+    template_name = "user_account/login.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)  
+        context['form'] = forms.LoginForm()
+        messages.success(self.request, message="Password changed successfully, please login to enter your new password")
+        return context
     
 class AllUsers(generic.ListView):
     template_name = "user_account/all_users.html"
     model = CustomUser
     ordering = ["first_name"]
     context_object_name = "users"
+

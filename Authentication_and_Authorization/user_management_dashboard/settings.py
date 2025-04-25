@@ -12,10 +12,9 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["c834-102-89-22-82.ngrok-free.app"]
+ALLOWED_HOSTS = [] # 2a3c-102-88-111-66.ngrok-free.app
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -24,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user_account',
+    # 'mailer',
 ]
 
 MIDDLEWARE = [
@@ -60,8 +60,15 @@ WSGI_APPLICATION = 'user_management_dashboard.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv("DB_ENGINE"),
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
+        # 'OPTIONS': {
+        #     'sslmode': 'require',
+        # },
     }
 }
 
@@ -117,6 +124,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 LOGIN_URL = "/user_account/login/"
 LOGOUT_REDIRECT_URL = "user_account:login"
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://c834-102-89-22-82.ngrok-free.app',
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://2a3c-102-88-111-66.ngrok-free.app',
+# ]
